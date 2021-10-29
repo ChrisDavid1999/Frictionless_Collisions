@@ -9,35 +9,50 @@
 # define M_PI           3.14159265358979323846
 bool Physics::Init()
 {
-    std::cout << "Physics go brrrrrrr" << std::endl;
-    
+    events = new PhysicsEvent();
     world = common.createPhysicsWorld();
     world->setIsDebugRenderingEnabled(true);
+    world->setEventListener(events);
     world->getDebugRenderer().setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
     world->setIsGravityEnabled(false);
-    
-    reactphysics3d::Transform test;
-    test.setPosition(rp3d::Vector3(1, 2, -3));
-    testSubject.scale = {0.25, 2, 2};
-    testSubject.rb = world->createRigidBody(test);
-    reactphysics3d::CollisionShape* box = common.createBoxShape(rp3d::Vector3(testSubject.scale.x/2, testSubject.scale.y/2, testSubject.scale.z/2));
-    testSubject.rb->addCollider(box, reactphysics3d::Transform().identity());
 
-    reactphysics3d::Transform test2;
-    test2.setPosition(rp3d::Vector3(-1, 1.25, -3));
-    testSubject2.rb = world->createRigidBody(test2);
-    testSubject2.scale = {0.25, 2, 2};
-    reactphysics3d::CollisionShape* box2 = common.createBoxShape(rp3d::Vector3(testSubject2.scale.x/2, testSubject2.scale.y/2, testSubject2.scale.z/2));
-    testSubject2.rb->addCollider(box2, reactphysics3d::Transform().identity());
+    {
+        solo::Rigidbody object(1);
+        reactphysics3d::Transform test;
+        test.setPosition(rp3d::Vector3(1, 2, -3));
+        object.scale = {0.25, 2, 2};
+        object.rb = world->createRigidBody(test);
+        object.rb->setUserData(&object.id);
+        reactphysics3d::CollisionShape* box = common.createBoxShape(rp3d::Vector3(object.scale.x/2, object.scale.y/2, object.scale.z/2));
+        object.rb->addCollider(box, reactphysics3d::Transform().identity());
+        objects.push_back(object);
+    }
 
-    reactphysics3d::Transform test3;
-    test3.setPosition(rp3d::Vector3(-3, 2, -3));
-    testSubject3.rb = world->createRigidBody(test3);
-    testSubject3.scale = {0.25, 0.25, 0.25};
-    reactphysics3d::CollisionShape* sphere = common.createSphereShape(testSubject3.scale.x);
-    testSubject3.rb->addCollider(sphere, reactphysics3d::Transform().identity());
-    testSubject3.rb->applyLocalForceAtLocalPosition(rp3d::Vector3(10, 0, 0), testSubject3.rb->getTransform().getPosition());
-    return world;
+    {
+        solo::Rigidbody object(2);
+        reactphysics3d::Transform test2;
+        test2.setPosition(rp3d::Vector3(-1, 1.25, -3));
+        object.rb = world->createRigidBody(test2);
+        object.scale = {0.25, 2, 2};
+        object.rb->setUserData(&object.id);
+        reactphysics3d::CollisionShape* box2 = common.createBoxShape(rp3d::Vector3(object.scale.x/2, object.scale.y/2, object.scale.z/2));
+        object.rb->addCollider(box2, reactphysics3d::Transform().identity());
+        objects.push_back(object);
+    }
+
+    {
+        solo::Rigidbody object(3);
+        reactphysics3d::Transform test3;
+        test3.setPosition(rp3d::Vector3(-3, 2, -3));
+        object.rb = world->createRigidBody(test3);
+        object.scale = {0.25, 0.25, 0.25};
+        object.rb->setUserData(&object.id);
+        reactphysics3d::CollisionShape* sphere = common.createSphereShape(object.scale.x);
+        object.rb->addCollider(sphere, reactphysics3d::Transform().identity());
+        objects.push_back(object);
+    }
+    std::cout << "Physics go brrrrrrr" << std::endl;
+    return world; 
 }
 
 void Physics::DrawDebugLines()
@@ -84,11 +99,12 @@ void Physics::Update(float dt)
 //This helped with the quat rotations http://goldsequence.blogspot.com/2016/04/quaternion-based-rotation-in-opengl.html
 void Physics::DrawRigidbodies()
 {
+    for(int i = 0; i < 3; i++)
     {
         glPushMatrix();
         glColor3f(1, 1, 1);
-        glTranslatef(testSubject.rb->getTransform().getPosition().x, testSubject.rb->getTransform().getPosition().y, testSubject.rb->getTransform().getPosition().z);
-        auto q = testSubject.rb->getTransform().getOrientation();
+        glTranslatef(objects[i].rb->getTransform().getPosition().x, objects[i].rb->getTransform().getPosition().y, objects[i].rb->getTransform().getPosition().z);
+        auto q = objects[i].rb->getTransform().getOrientation();
     
         float norm = glm::sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
 
@@ -107,64 +123,17 @@ void Physics::DrawRigidbodies()
         {
             glRotatef(theta*180.0f/M_PI, q1, q2, q3);
         }
-        glScalef(testSubject.scale.x, testSubject.scale.y, testSubject.scale.z);
-        glutSolidCube(1);
-        glPopMatrix();
-    }
-    
-    {
-        glPushMatrix();
-        glColor3f(0.5, 0.75, 1);
-        glTranslatef(testSubject2.rb->getTransform().getPosition().x, testSubject2.rb->getTransform().getPosition().y, testSubject2.rb->getTransform().getPosition().z);
-        auto q = testSubject2.rb->getTransform().getOrientation();
-        
-        float norm = glm::sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
-
-        float q0 = q.w / norm;
-        float q1 = q.x / norm;
-        float q2 = q.y / norm;
-        float q3 = q.z / norm;
-        float theta = glm::acos(q0) * 2;
-        float aNorm = glm::sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
-        
-        if (aNorm != 0)
-        {
-            glRotatef(theta*180.0f/M_PI, q1/aNorm, q2/aNorm, q3/aNorm);
-        }
+        glScalef(objects[i].scale.x, objects[i].scale.y, objects[i].scale.z);
+        if(i != 2)
+            glutSolidCube(1);
         else
         {
-            glRotatef(theta*180.0f/M_PI, q1, q2, q3);
+            glutSolidSphere(1, 10, 10);
+            rp3d::Transform t = objects[i].rb->getTransform();
+            t.setPosition(rp3d::Vector3(t.getPosition().x + 0.1, t.getPosition().y, t.getPosition().z));
+            objects[i].rb->setTransform(t);
         }
-        glScalef(testSubject2.scale.x, testSubject2.scale.y, testSubject2.scale.z);
-        glutSolidCube(1);
-        glPopMatrix();
-    }
-
-    {
-        glPushMatrix();
-        glColor3f(0.25, 1, 0.5);
-        glTranslatef(testSubject3.rb->getTransform().getPosition().x, testSubject3.rb->getTransform().getPosition().y, testSubject3.rb->getTransform().getPosition().z);
-        auto q = testSubject3.rb->getTransform().getOrientation();
         
-        float norm = glm::sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z);
-
-        float q0 = q.w / norm;
-        float q1 = q.x / norm;
-        float q2 = q.y / norm;
-        float q3 = q.z / norm;
-        float theta = glm::acos(q0) * 2;
-        float aNorm = glm::sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
-        
-        if (aNorm != 0)
-        {
-            glRotatef(theta*180.0f/M_PI, q1/aNorm, q2/aNorm, q3/aNorm);
-        }
-        else
-        {
-            glRotatef(theta*180.0f/M_PI, q1, q2, q3);
-        }
-        glScalef(testSubject3.scale.x, testSubject3.scale.y, testSubject3.scale.z);
-        glutSolidSphere(1, 10, 10);
         glPopMatrix();
     }
 }

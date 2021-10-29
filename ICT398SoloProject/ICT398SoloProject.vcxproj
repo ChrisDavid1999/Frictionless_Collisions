@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="Classes\GameObject.cpp" />
     <ClCompile Include="Classes\Physics.cpp" />
+    <ClCompile Include="Classes\PhysicsEvent.cpp" />
     <ClCompile Include="Classes\Rigidbody.cpp" />
     <ClCompile Include="Classes\Transform.cpp" />
     <ClCompile Include="Classes\WorldManager.cpp" />
@@ -159,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="Classes\GameObject.h" />
     <ClInclude Include="Classes\Physics.h" />
+    <ClInclude Include="Classes\PhysicsEvent.h" />
     <ClInclude Include="Classes\Rigidbody.h" />
     <ClInclude Include="Classes\Singleton.h" />
     <ClInclude Include="Classes\Transform.h" />
