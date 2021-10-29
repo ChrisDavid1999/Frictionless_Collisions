@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "Singleton.h"
-#include <reactphysics3d/reactphysics3d.h>
+#include "Rigidbody.h"
 #include <GL/glut.h>
 #include <glm/glm.hpp>
 
@@ -14,8 +14,8 @@ public:
 private:
     reactphysics3d::PhysicsCommon common;
     reactphysics3d::PhysicsWorld* world = nullptr;
-    reactphysics3d::RigidBody* testSubject = nullptr;
-    reactphysics3d::RigidBody* testSubject2 = nullptr;
+    solo::Rigidbody testSubject;
+    solo::Rigidbody testSubject2;
+    solo::Rigidbody testSubject3;
 };
-
 typedef singleton<Physics> PhysicsManager;
