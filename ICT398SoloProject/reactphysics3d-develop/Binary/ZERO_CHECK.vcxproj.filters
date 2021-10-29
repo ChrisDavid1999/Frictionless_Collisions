@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\chris\Downloads\reactphysics3d-develop\reactphysics3d-develop\Binary\CMakeFiles\a6610422e96dc620fcd71333f70182eb\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{7AFF8040-BCAF-35A9-9C25-E65529378F6D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
