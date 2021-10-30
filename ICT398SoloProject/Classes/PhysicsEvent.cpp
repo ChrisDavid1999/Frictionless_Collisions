@@ -1,5 +1,5 @@
 ﻿#include "PhysicsEvent.h"
-
+#include "Physics.h"
 void PhysicsEvent::onTrigger(const reactphysics3d::OverlapCallback::CallbackData&)
 {
 
@@ -25,7 +25,11 @@ void PhysicsEvent::onContact(const CallbackData& callbackData)
             //Penetration
             contacts.penetration = contactPoint.getPenetrationDepth();
 
-            std::cout << reinterpret_cast<int*>(contactPair.getBody1()->getUserData()) << " " << reinterpret_cast<int*>(contactPair.getBody2()->getUserData()) << std::endl;
+            //Ids
+            contacts.objectOne.id = static_cast<solo::Rigidbody*>(contactPair.getBody1()->getUserData())->id;
+            contacts.objectTwo.id = static_cast<solo::Rigidbody*>(contactPair.getBody2()->getUserData())->id;
+
+            PhysicsManager::getInstance().AddCollision(contacts);
         }
     }
 }
