@@ -19,17 +19,19 @@ void PhysicsEvent::onContact(const CallbackData& callbackData)
             contacts.normal = contactPoint.getWorldNormal();
             
             //Objects contact points
-            contacts.objectOne.contact = contactPair.getCollider1()->getLocalToBodyTransform() * contactPoint.getLocalPointOnCollider1();
-            contacts.objectTwo.contact = contactPair.getCollider2()->getLocalToBodyTransform() * contactPoint.getLocalPointOnCollider2();
+            contacts.objectOne.contact = contactPair.getCollider1()->getLocalToWorldTransform()  * contactPoint.getLocalPointOnCollider1();
+            contacts.objectTwo.contact = contactPair.getCollider2()->getLocalToWorldTransform()  * contactPoint.getLocalPointOnCollider2();
 
             //Penetration
             contacts.penetration = contactPoint.getPenetrationDepth();
 
+            std::cout << contactPoint.getPenetrationDepth() << std::endl;
             //Ids
             contacts.objectOne.id = static_cast<solo::Rigidbody*>(contactPair.getBody1()->getUserData())->id;
             contacts.objectTwo.id = static_cast<solo::Rigidbody*>(contactPair.getBody2()->getUserData())->id;
 
             PhysicsManager::getInstance().AddCollision(contacts);
+            std::cout << "TCP" << contactPair.getNbContactPoints() <<  " NCP" << callbackData.getNbContactPairs() << std::endl;
         }
     }
 }

@@ -14,6 +14,7 @@ bool Physics::Init()
     world->setIsDebugRenderingEnabled(true);
     world->setEventListener(events);
     world->getDebugRenderer().setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
+    world->getDebugRenderer().setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
     world->setIsGravityEnabled(false);
     
     std::cout << "Physics go brrrrrrr" << std::endl;
@@ -57,7 +58,7 @@ void Physics::LoadFile(std::string file)
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* sphere = common.createSphereShape(object->scale.x);
         object->rb->addCollider(sphere, reactphysics3d::Transform().identity());
-        object->linearVelocity = {3, 0, 0};
+        object->linearVelocity = {1, 0, 0};
         object->mass.SetMass(10);
         objects.push_back(object);
     }
@@ -117,7 +118,7 @@ void Physics::Update(float dt)
 //This helped with the quat rotations http://goldsequence.blogspot.com/2016/04/quaternion-based-rotation-in-opengl.html
 void Physics::DrawRigidbodies()
 {
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < objects.size(); i++)
     {
         glPushMatrix();
         glColor3f(1, 1, 1);
@@ -213,25 +214,25 @@ void Physics::Collisions(float dt)
 
         //Denominator
         float totalMass = objects[one]->mass.inverse + objects[two]->mass.inverse;
-        glm::vec3 inertia = (rigidbodyOne * objects[one]->inertiaTensor.WorldInertiaTensor * rigidbodyOne) + (rigidbodyTwo * objects[two]->inertiaTensor.WorldInertiaTensor * rigidbodyTwo);
+        glm::vec3 inertia = (rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne) + (rigidbodyTwo * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyTwo);
         glm::vec3 denominator = totalMass + inertia;
 
         //Lambda + impulse
         glm::vec3 lambda = numerator/denominator;
         glm::vec3 impulse = lambda * contactNormal;
-
         //Set values one
-        linearVelocityOne += impulse * objects[one]->mass.inverse;
-        angularVelocityOne += (lambda * objects[one]->inertiaTensor.WorldInertiaTensor * rigidbodyCrossNormalOne);
-        objects[one]->linearVelocity = linearVelocityOne;
-        objects[one]->angularVelocity = angularVelocityOne;
 
-        //Set values two
-        linearVelocityTwo -= impulse * objects[two]->mass.inverse;
-        angularVelocityTwo -= (lambda * objects[two]->inertiaTensor.WorldInertiaTensor * rigidbodyCrossNormalTwo);
-        objects[two]->linearVelocity = linearVelocityTwo;
-        objects[two]->angularVelocity = angularVelocityTwo;
-        
+            linearVelocityOne += impulse * objects[one]->mass.inverse;
+            angularVelocityOne += (lambda * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalOne);
+            objects[one]->linearVelocity = linearVelocityOne;
+            objects[one]->angularVelocity = angularVelocityOne;
+
+            //Set values two
+            linearVelocityTwo -= impulse * objects[two]->mass.inverse;
+            angularVelocityTwo -= (lambda * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalTwo);
+            objects[two]->linearVelocity = linearVelocityTwo;
+            objects[two]->angularVelocity = angularVelocityTwo;    
+
         collisions.pop();
     }
 }
@@ -268,7 +269,6 @@ void Physics::ProcessRigidbodies(float dt)
         rp3d::Transform objectTransform = objects[i]->rb->getTransform();
         rp3d::Vector3 position = objectTransform.getPosition();
         rp3d::Quaternion orientation = objectTransform.getOrientation();
-
         //Update them
         position += Math::ToVector3(objects[i]->linearVelocity * dt);
         orientation += Math::ToQuaternion(glm::quat(0, objects[i]->angularVelocity) * dt);
