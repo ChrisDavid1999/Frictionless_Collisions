@@ -7,6 +7,13 @@ namespace solo
     {
         glm::vec3 localCenter = {0, 0, 0};
         glm::vec3 worldCenter = {0, 0, 0};
+
+        void SetMass(float mass = 1.0f)
+        {
+            value = mass;
+            inverse = 1.0f / (value > 0.0f ? value : 1.0f); // cant invert mass if its 0
+        }
+        
         float value = 1.0f;
         float inverse = 1.0f;
     };

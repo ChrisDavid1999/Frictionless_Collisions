@@ -168,6 +168,9 @@
     <ClInclude Include="Classes\Transform.h" />
     <ClInclude Include="Classes\WorldManager.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="files\one.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
