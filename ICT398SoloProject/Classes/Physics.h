@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <queue>
+#include <deque>
 #include <vector>
 #include "PhysicsEvent.h"
 #include "Singleton.h"
@@ -27,7 +27,7 @@ private:
     reactphysics3d::PhysicsWorld* world = nullptr;
     std::vector<solo::Rigidbody*> objects;
     PhysicsEvent * events = nullptr;
-    std::queue<CollisionInfo> collisions;
+    std::deque<CollisionInfo> collisions;
     
 };
 typedef singleton<Physics> PhysicsManager;

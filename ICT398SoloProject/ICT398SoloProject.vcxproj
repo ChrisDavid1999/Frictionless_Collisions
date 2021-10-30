@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Classes\GameObject.cpp" />
+    <ClCompile Include="Classes\Math.cpp" />
     <ClCompile Include="Classes\Physics.cpp" />
     <ClCompile Include="Classes\PhysicsEvent.cpp" />
     <ClCompile Include="Classes\Rigidbody.cpp" />
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\GameObject.h" />
+    <ClInclude Include="Classes\Math.h" />
     <ClInclude Include="Classes\Physics.h" />
     <ClInclude Include="Classes\PhysicsEvent.h" />
     <ClInclude Include="Classes\Rigidbody.h" />

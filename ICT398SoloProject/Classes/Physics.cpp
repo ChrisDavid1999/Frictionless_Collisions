@@ -151,15 +151,15 @@ void Physics::DrawRigidbodies()
 
 void Physics::AddCollision(CollisionInfo info)
 {
-    collisions.push(info);
+    collisions.push_back(info);
 }
 
 void Physics::Collisions(float dt)
 {
-    for(CollisionInfo collisions : collisions)
+    for(CollisionInfo col : collisions)
     {
-        int one = collisions.objectOne.id;
-        int two = collisions.objectTwo.id;
+        int one = col.objectOne.id;
+        int two = col.objectTwo.id;
 
         //rp3d::Transform transformOne = objects[one]->rb->getTransform();
 
@@ -169,10 +169,10 @@ void Physics::Collisions(float dt)
         glm::vec3 angularVelocityOne = objects[one]->angularVelocity;
         glm::vec3 angularVelocityTwo = objects[two]->angularVelocity;
 
-        glm::vec3 contactPositionOne = Math::ToVec3(collisions.objectOne.contact);
-        glm::vec3 contactPositionTwo = Math::ToVec3(collisions.objectTwo.contact);
+        glm::vec3 contactPositionOne = Math::ToVec3(col.objectOne.contact);
+        glm::vec3 contactPositionTwo = Math::ToVec3(col.objectTwo.contact);
 
-        glm::vec3 contactNormal = Math::ToVec3(collisions.normal);
+        glm::vec3 contactNormal = Math::ToVec3(col.normal);
 
         glm::vec3 rigidbodyOne = contactPositionOne - Math::ToVec3(objects[one]->rb->getTransform().getPosition());
         glm::vec3 rigidbodyTwo = contactPositionTwo - Math::ToVec3(objects[two]->rb->getTransform().getPosition());
