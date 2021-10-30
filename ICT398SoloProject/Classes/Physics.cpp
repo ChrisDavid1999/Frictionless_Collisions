@@ -32,14 +32,14 @@ void Physics::LoadFile(std::string file)
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
         object->rb->addCollider(box, reactphysics3d::Transform().identity());
-        object->mass.SetMass(50);
+        object->mass.SetMass(1000);
         objects.push_back(object);
     }
 
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());
         reactphysics3d::Transform test2;
-        test2.setPosition(rp3d::Vector3(-1, 2.5, -3));
+        test2.setPosition(rp3d::Vector3(0, 2.5, -3));
         object->rb = world->createRigidBody(test2);
         object->scale = {0.25, 2, 2};
         object->rb->setUserData(object);
@@ -56,10 +56,10 @@ void Physics::LoadFile(std::string file)
         object->rb = world->createRigidBody(test3);
         object->scale = {0.25, 0.25, 0.25};
         object->rb->setUserData(object);
-        reactphysics3d::CollisionShape* sphere = common.createSphereShape(object->scale.x);
-        object->rb->addCollider(sphere, reactphysics3d::Transform().identity());
-        object->linearVelocity = {1, 0, 0};
-        object->mass.SetMass(10);
+        reactphysics3d::CollisionShape* box3 = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
+        object->rb->addCollider(box3, reactphysics3d::Transform().identity());
+        object->linearVelocity = {5, 0, 0};
+        object->mass.SetMass(1);
         objects.push_back(object);
     }
 }
@@ -93,7 +93,7 @@ void Physics::DrawDebugLines()
         rp3d::Vector3 point2 = lines[i].point2;
         glBegin(GL_LINE_STRIP);
             glPushMatrix();
-                glColor3f(255/255, 0/255, 255/255);
+                glColor3f(255/255, 100/255, 155/255);
                 glVertex3f(point1.x, point1.y, point1.z);
                 glVertex3f(point2.x, point2.y, point2.z);
             glPopMatrix();
@@ -143,12 +143,12 @@ void Physics::DrawRigidbodies()
             glRotatef(theta*180.0f/M_PI, q1, q2, q3);
         }
         glScalef(objects[i]->scale.x, objects[i]->scale.y, objects[i]->scale.z);
-        if(i != 2)
+        
             glutSolidCube(1);
-        else
+        /*else
         {
             glutSolidSphere(1, 10, 10);
-        }
+        }*/
         
         glPopMatrix();
     }
@@ -264,7 +264,9 @@ void Physics::ProcessRigidbodies(float dt)
     {
         objects[i]->linearVelocity += + dt * objects[i]->mass.inverse * objects[i]->forces;
         objects[i]->angularVelocity += dt * objects[i]->inertiaTensor.WorldInertiaTensor * objects[i]->torques;
-        
+
+        objects[i]->linearVelocity *= 0.99;
+        objects[i]->angularVelocity *= 0.99;
         //Get important values
         rp3d::Transform objectTransform = objects[i]->rb->getTransform();
         rp3d::Vector3 position = objectTransform.getPosition();

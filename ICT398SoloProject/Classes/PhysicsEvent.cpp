@@ -24,14 +24,15 @@ void PhysicsEvent::onContact(const CallbackData& callbackData)
 
             //Penetration
             contacts.penetration = contactPoint.getPenetrationDepth();
-
-            std::cout << contactPoint.getPenetrationDepth() << std::endl;
+            
             //Ids
             contacts.objectOne.id = static_cast<solo::Rigidbody*>(contactPair.getBody1()->getUserData())->id;
             contacts.objectTwo.id = static_cast<solo::Rigidbody*>(contactPair.getBody2()->getUserData())->id;
 
             PhysicsManager::getInstance().AddCollision(contacts);
             std::cout << "TCP" << contactPair.getNbContactPoints() <<  " NCP" << callbackData.getNbContactPairs() << std::endl;
+            if(contactPair.getNbContactPoints() == 4)
+                break;
         }
     }
 }
