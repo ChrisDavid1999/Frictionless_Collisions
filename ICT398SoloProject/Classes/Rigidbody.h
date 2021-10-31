@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <vector>
 #include <glm/glm.hpp>
 #include "Math.h"
 namespace solo
@@ -41,6 +42,26 @@ namespace solo
             return WorldInertiaTensor;
         }
     };
+        
+    struct Collider
+    {
+        enum type { box, sphere };
+        
+
+        Collider(type t, reactphysics3d::CollisionShape* shape)
+        {
+            collider = nullptr;
+        }
+        
+        rp3d::CollisionShape * collider;
+
+        void Box(reactphysics3d::CollisionShape* shape);
+        void Sphere(reactphysics3d::CollisionShape* shape);
+        Mass mass;
+        float density;
+        float volume;
+        InertiaTensor inertiaTensor;
+    };
     
     struct Rigidbody
     {
@@ -49,6 +70,9 @@ namespace solo
         {
             rb = nullptr;
         }
+
+        void AddCollisionShape(Collider::type shape, reactphysics3d::CollisionShape*);
+        void Update();
         
         //Change this to collision body when actually doing it
         int id;
@@ -62,7 +86,7 @@ namespace solo
         glm::vec3 torques = {};
         glm::vec3 forces = {};
         InertiaTensor inertiaTensor;
-
+        std::vector<Collider> colliders;
         //collider stuff, might need ??
         /*std::unordered_map<uint32_t, Ref<Collider>> m_Colliders;
 
