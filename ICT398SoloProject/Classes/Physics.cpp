@@ -30,7 +30,7 @@ void Physics::LoadFile(std::string file)
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());
         reactphysics3d::Transform test;
-        test.setPosition(rp3d::Vector3(1, 2, -3));
+        test.setPosition(rp3d::Vector3(1, 1, -3));
         object->scale = {0.1, 2, 1};
         object->rb = world->createRigidBody(test);
         object->rb->setUserData(object);
@@ -56,28 +56,14 @@ void Physics::LoadFile(std::string file)
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());
         reactphysics3d::Transform test3;
-        test3.setPosition(rp3d::Vector3(-3, 2, -3));
+        test3.setPosition(rp3d::Vector3(3, 2, -3));
         object->rb = world->createRigidBody(test3);
         object->scale = {0.25, 0.25, 0.25};
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box3 = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
         object->rb->addCollider(box3, reactphysics3d::Transform().identity());
-        object->linearVelocity = {2, 0, 0};
-        object->mass.SetMass(0.1);
-        objects.push_back(object);
-    }
-
-    {
-        solo::Rigidbody* object = new solo::Rigidbody(objects.size());
-        reactphysics3d::Transform test3;
-        test3.setPosition(rp3d::Vector3(3, 0.5, -3));
-        object->rb = world->createRigidBody(test3);
-        object->scale = {0.25, 0.25, 0.25};
-        object->rb->setUserData(object);
-        reactphysics3d::CollisionShape* box = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->rb->addCollider(box, reactphysics3d::Transform().identity());
         object->linearVelocity = {-2, 0, 0};
-        object->mass.SetMass(20);
+        object->mass.SetMass(0.1);
         objects.push_back(object);
     }
 }
@@ -239,9 +225,7 @@ void Physics::Collisions(float dt)
         float lambda = numerator/denominator;
         glm::vec3 impulse = lambda * contactNormal;
         //Set values one
-
-        if(lambda < 0)
-        {
+        
             linearVelocityOne += impulse * objects[one]->mass.inverse;
             angularVelocityOne += (lambda * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalOne);
             objects[one]->linearVelocity = linearVelocityOne;
@@ -255,8 +239,8 @@ void Physics::Collisions(float dt)
             std::cout << "l1 " << linearVelocityOne.x << " " << linearVelocityOne.y << " " << linearVelocityOne.z << std::endl;
             std::cout << "a1 " << angularVelocityOne.x << " " << angularVelocityOne.y << " " << angularVelocityOne.z << std::endl;
             std::cout << "l2 " << linearVelocityTwo.x << " " << linearVelocityTwo.y << " " << linearVelocityTwo.z << std::endl;
-            std::cout << "a2 " << angularVelocityTwo.x << " " << angularVelocityTwo.y << " " << angularVelocityTwo.z << std::endl;   
-        }
+            std::cout << "a2 " << angularVelocityTwo.x << " " << angularVelocityTwo.y << " " << angularVelocityTwo.z << std::endl;
+        
         collisions.pop();
     }
 }
