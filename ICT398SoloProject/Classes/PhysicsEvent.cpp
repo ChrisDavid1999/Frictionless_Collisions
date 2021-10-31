@@ -31,8 +31,6 @@ void PhysicsEvent::onContact(const CallbackData& callbackData)
 
             PhysicsManager::getInstance().AddCollision(contacts);
             std::cout << "TCP" << contactPair.getNbContactPoints() <<  " NCP" << callbackData.getNbContactPairs() << std::endl;
-            if(contactPair.getNbContactPoints() == 4)
-                break;
         }
     }
 }

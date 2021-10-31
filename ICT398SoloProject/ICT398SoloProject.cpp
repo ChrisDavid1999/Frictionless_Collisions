@@ -1,3 +1,6 @@
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_opengl2.h"
+#include "imgui/imgui_impl_glut.h"
 #include <stdlib.h>
 #include <math.h>
 #include <GL/glut.h>
@@ -9,6 +12,17 @@ float lx = 0.0f, lz = -1.0f;
 float x = 0.0f, z = 5.0f;
 float deltaAngle = 0.0f;
 int xOrigin = -1;
+// Our state
+static bool show_demo_window = true;
+static bool show_another_window = false;
+static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+void my_display_code()
+{
+	{
+
+	}
+}
 
 void changeSize(int w, int h) {
 
@@ -30,8 +44,12 @@ void changeSize(int w, int h) {
 
 void renderScene(void) {
 
-	Manager::getInstance().DetlaTimeUpdate(glutGet(GLUT_ELAPSED_TIME));
+	//ImGui_ImplOpenGL2_NewFrame();
+	//ImGui_ImplGLUT_NewFrame();
+	//my_display_code();
+	//ImGui::Render();
 	
+	Manager::getInstance().DetlaTimeUpdate(glutGet(GLUT_ELAPSED_TIME));
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
@@ -43,8 +61,9 @@ void renderScene(void) {
 	//Do other stuff here
 	Manager::getInstance().Update();
 	Manager::getInstance().RenderUpdate();
-	
+	//ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 	glutSwapBuffers();
+	glutPostRedisplay();
 }
 
 void keys(unsigned char key, int xx, int yy) {
@@ -100,7 +119,7 @@ int main(int argc, char** argv)
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(changeSize);
 	glutIdleFunc(renderScene);
-
+	
 	glutIgnoreKeyRepeat(1);
 	glutKeyboardFunc(keys);
 	glutSpecialFunc(pressKey);
@@ -110,7 +129,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(mouseMove);
 
 	glEnable(GL_DEPTH_TEST);
-
+	
 	glutMainLoop();
 
 	return 1;

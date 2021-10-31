@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <deque>
 #include <queue>
 #include <vector>
 #include "PhysicsEvent.h"
@@ -23,7 +22,8 @@ public:
     void UpdateRigidbodies(float dt);
     void Collisions(float dt);
     void IntertiaTensors(float dt);
-    
+
+    void ImGuiRender();
 private:
     reactphysics3d::PhysicsCommon common;
     reactphysics3d::PhysicsWorld* world = nullptr;
