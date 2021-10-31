@@ -197,8 +197,8 @@ void Physics::Collisions(float dt)
 
         glm::vec3 contactNormal = Math::ToVec3(col.normal);
 
-        glm::vec3 rigidbodyOne = contactPositionOne - Math::ToVec3(objects[one]->rb->getTransform().getPosition());
-        glm::vec3 rigidbodyTwo = contactPositionTwo - Math::ToVec3(objects[two]->rb->getTransform().getPosition());
+        glm::vec3 rigidbodyOne = contactPositionOne - Math::ToVec3(objects[one]->rb->getTransform().getPosition());//Change this to com
+        glm::vec3 rigidbodyTwo = contactPositionTwo - Math::ToVec3(objects[two]->rb->getTransform().getPosition());//Change this to com
 
         rp3d::Vector3 positionOne = objects[one]->rb->getTransform().getPosition();
         rp3d::Vector3 positionTwo = objects[two]->rb->getTransform().getPosition();
