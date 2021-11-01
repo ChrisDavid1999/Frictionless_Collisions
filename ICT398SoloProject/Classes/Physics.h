@@ -30,6 +30,6 @@ private:
     std::vector<solo::Rigidbody*> objects;
     PhysicsEvent * events = nullptr;
     std::queue<CollisionInfo> collisions;
-    
+    bool run = false;
 };
 typedef singleton<Physics> PhysicsManager;

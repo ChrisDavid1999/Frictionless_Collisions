@@ -48,15 +48,29 @@ namespace solo
         enum type { box, sphere };
         
 
-        Collider(type t, reactphysics3d::CollisionShape* shape, rp3d::Transform trans)
+        Collider(type t, reactphysics3d::CollisionShape* shape, rp3d::Transform trans, float m)
         {
-            collider = nullptr;
-            transform = trans;
+            transform = reactphysics3d::Transform().identity();
+            mass.SetMass(m);
+            switch (t)
+            {
+                case type::box:
+                    Box(shape, m);
+                break;
+                case type::sphere:
+                    Sphere(shape);
+                break;
+            }
+        }
+        
+        void Update(rp3d::Transform bodyTransform)
+        {
+            
         }
         
         rp3d::CollisionShape * collider;
 
-        void Box(reactphysics3d::CollisionShape* shape);
+        void Box(reactphysics3d::CollisionShape* shape, float d);
         void Sphere(reactphysics3d::CollisionShape* shape);
         Mass mass;
         float density;
@@ -73,7 +87,7 @@ namespace solo
             rb = nullptr;
         }
 
-        void AddCollisionShape(Collider::type shape, reactphysics3d::CollisionShape*);
+        void AddCollisionShape(Collider::type shape, reactphysics3d::CollisionShape*, float m);
         void Update();
         
         //Change this to collision body when actually doing it
@@ -89,6 +103,7 @@ namespace solo
         glm::vec3 forces = {};
         InertiaTensor inertiaTensor;
         std::vector<Collider> colliders;
+        glm::vec3 CalculateCentreOfMass();
         //collider stuff, might need ??
         /*std::unordered_map<uint32_t, Ref<Collider>> m_Colliders;
 

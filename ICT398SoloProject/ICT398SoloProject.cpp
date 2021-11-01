@@ -7,7 +7,7 @@
 
 float angle = 0.0f;
 float lx = 0.0f, lz = -1.0f;
-float x = 0.0f, z = 5.0f;
+float x = 0.0f, z = 10.0f;
 float deltaAngle = 0.0f;
 int xOrigin = -1;
 // Our state

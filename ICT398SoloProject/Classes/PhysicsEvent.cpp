@@ -30,7 +30,7 @@ void PhysicsEvent::onContact(const CallbackData& callbackData)
             contacts.objectTwo.id = static_cast<solo::Rigidbody*>(contactPair.getBody2()->getUserData())->id;
 
             PhysicsManager::getInstance().AddCollision(contacts);
-            std::cout << "TCP" << contactPair.getNbContactPoints() <<  " NCP" << callbackData.getNbContactPairs() << std::endl;
+            //std::cout << "TCP" << contactPair.getNbContactPoints() <<  " NCP" << callbackData.getNbContactPairs() << std::endl;
         }
     }
 }

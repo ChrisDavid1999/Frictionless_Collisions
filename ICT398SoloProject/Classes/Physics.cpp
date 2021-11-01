@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "../imgui/imgui.h"
 # define M_PI           3.14159265358979323846
@@ -35,35 +36,32 @@ void Physics::LoadFile(std::string file)
         object->rb = world->createRigidBody(test);
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->rb->addCollider(box, reactphysics3d::Transform().identity());
-        object->mass.SetMass(25);
+        object->AddCollisionShape(solo::Collider::type::box, box, 10);
         objects.push_back(object);
     }
 
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());
         reactphysics3d::Transform test2;
-        test2.setPosition(rp3d::Vector3(0, 2.5, -3));
+        test2.setPosition(rp3d::Vector3(0.1, 2.5, -3));
         object->rb = world->createRigidBody(test2);
         object->scale = {0.1, 2, 2};
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box2 = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->rb->addCollider(box2, reactphysics3d::Transform().identity());
-        object->mass.SetMass(25);
+        object->AddCollisionShape(solo::Collider::type::box, box2, 50);
         objects.push_back(object);
     }
 
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());
         reactphysics3d::Transform test3;
-        test3.setPosition(rp3d::Vector3(3, 2, -3));
+        test3.setPosition(rp3d::Vector3(5, 0.7, -3.2));
         object->rb = world->createRigidBody(test3);
         object->scale = {0.25, 0.25, 0.25};
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box3 = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->rb->addCollider(box3, reactphysics3d::Transform().identity());
-        object->linearVelocity = {-2, 0, 0};
-        object->mass.SetMass(0.1);
+        object->AddCollisionShape(solo::Collider::type::box, box3, 1);
+        object->linearVelocity = {-10, 0, 0};
         objects.push_back(object);
     }
 }
@@ -109,12 +107,12 @@ void Physics::Update(float dt)
 {
     //Update inertias
     IntertiaTensors(dt);
-    //Process collisions (need to test where this best fits)
-    Collisions(dt);
     //Process Rbs
     ProcessRigidbodies(dt);
     //Update Rbs
     UpdateRigidbodies(dt);
+    //Process collisions (need to test where this best fits)
+    Collisions(dt);
     //Might need to reset?
     world->update(dt);
 }
@@ -171,39 +169,26 @@ void Physics::Collisions(float dt)
         CollisionInfo col = collisions.front();
         int one = col.objectOne.id;
         int two = col.objectTwo.id;
-
-        //Get Initial values
         glm::vec3 linearVelocityOne = objects[one]->linearVelocity;
         glm::vec3 angularVelocityOne = objects[one]->angularVelocity;
-        glm::vec3 contactPositionOne = Math::ToVec3(col.objectOne.contact);
+        glm::vec3 contactPositionOne = Math::ToVec3(col.objectTwo.contact);
         
         glm::vec3 angularVelocityTwo = objects[two]->angularVelocity;
         glm::vec3 linearVelocityTwo = objects[two]->linearVelocity;
         glm::vec3 contactPositionTwo = Math::ToVec3(col.objectTwo.contact);
 
         glm::vec3 contactNormal = Math::ToVec3(col.normal);
-
-        glm::vec3 rigidbodyOne = contactPositionOne - Math::ToVec3(objects[one]->rb->getTransform().getPosition());//Change this to com
-        glm::vec3 rigidbodyTwo = contactPositionTwo - Math::ToVec3(objects[two]->rb->getTransform().getPosition());//Change this to com
-
-        rp3d::Vector3 positionOne = objects[one]->rb->getTransform().getPosition();
-        rp3d::Vector3 positionTwo = objects[two]->rb->getTransform().getPosition();
-
-        float penetration = (col.penetration/2) * -1;
-        positionOne += Math::ToVector3(contactNormal) * penetration; 
-        positionTwo -= Math::ToVector3(contactNormal) * penetration;
-
-        rp3d::Transform transformOne = objects[one]->rb->getTransform();
-        rp3d::Transform transformTwo = objects[two]->rb->getTransform();
         
-        transformOne.setPosition(positionOne);
-        transformTwo.setPosition(positionTwo);
-        
-        /*objects[one]->rb->setTransform(transformOne);
-        objects[two]->rb->setTransform(transformTwo);*/
+        /*
+        objects[one]->rb->setTransform(transformOne);
+        objects[two]->rb->setTransform(transformTwo);
+        */
+
+        glm::vec3 rigidbodyOne = contactPositionOne - objects[one]->mass.worldCenter;
+        glm::vec3 rigidbodyTwo = contactPositionTwo - objects[two]->mass.worldCenter;
         
         //Math time
-        float restitution = -(1 + 0.6);//Need to check this out
+        float restitution = -(1 + 0.4);//Need to check this out
 
         glm::vec3 velocityDifference = linearVelocityOne - linearVelocityTwo;
 
@@ -218,30 +203,37 @@ void Physics::Collisions(float dt)
 
         //Denominator
         float totalMass = objects[one]->mass.inverse + objects[two]->mass.inverse;
-        float inertia = glm::dot((rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne), (rigidbodyTwo * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyTwo));
-        float denominator = totalMass + inertia;
+        glm::vec3 inertia = (rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne) +
+            (rigidbodyTwo * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyTwo);
+        glm::vec3 denominator = totalMass + inertia;
 
         //Lambda + impulse
-        float lambda = numerator/denominator;
+        glm::vec3 lambda = numerator/denominator;
         glm::vec3 impulse = lambda * contactNormal;
+        float inertiaS = glm::dot((rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne),
+            (rigidbodyTwo * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyTwo));
+        float denominatorS = totalMass + inertiaS;
+
+        //Lambda + impulse
+        float lambdaS = numerator/denominatorS;
+        //glm::vec3 impulse = lambda * contactNormal;
         //Set values one
-        
             linearVelocityOne += impulse * objects[one]->mass.inverse;
             angularVelocityOne += (lambda * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalOne);
             objects[one]->linearVelocity = linearVelocityOne;
             objects[one]->angularVelocity = angularVelocityOne;
-            std::cout << "Lambda " << lambda << std::endl;
             //Set values two
             linearVelocityTwo -= impulse * objects[two]->mass.inverse;
             angularVelocityTwo -= (lambda * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalTwo);
             objects[two]->linearVelocity = linearVelocityTwo;
-            objects[two]->angularVelocity = angularVelocityTwo;    
-            std::cout << "l1 " << linearVelocityOne.x << " " << linearVelocityOne.y << " " << linearVelocityOne.z << std::endl;
-            std::cout << "a1 " << angularVelocityOne.x << " " << angularVelocityOne.y << " " << angularVelocityOne.z << std::endl;
-            std::cout << "l2 " << linearVelocityTwo.x << " " << linearVelocityTwo.y << " " << linearVelocityTwo.z << std::endl;
-            std::cout << "a2 " << angularVelocityTwo.x << " " << angularVelocityTwo.y << " " << angularVelocityTwo.z << std::endl;
-        
-        collisions.pop();
+            objects[two]->angularVelocity = angularVelocityTwo;   
+
+        if(two == 0)
+        {
+            collisions.pop();
+        }
+        else
+            collisions.pop();
     }
 }
 
@@ -272,7 +264,8 @@ void Physics::ProcessRigidbodies(float dt)
     {
         objects[i]->linearVelocity += dt * objects[i]->mass.inverse * objects[i]->forces;
         objects[i]->angularVelocity += dt * objects[i]->inertiaTensor.WorldInertiaTensor * objects[i]->torques;
-        std::cout << "AV: " << objects[i]->angularVelocity.x << " " << objects[i]->angularVelocity.y << " " << objects[i]->angularVelocity.z << std::endl;
+        //objects[i]->angularVelocity += dt * objects[i]->inertiaTensor.WorldInertiaTensor * objects[i]->torques;
+        //std::cout << "AV: " << objects[i]->angularVelocity.x << " " << objects[i]->angularVelocity.y << " " << objects[i]->angularVelocity.z << std::endl;
         
         //Get important values
         rp3d::Transform objectTransform = objects[i]->rb->getTransform();
@@ -281,8 +274,8 @@ void Physics::ProcessRigidbodies(float dt)
         
         //Update them
         position += Math::ToVector3(objects[i]->linearVelocity * dt);
-        orientation += Math::ToQuaternion(glm::quat(0, objects[i]->angularVelocity) * dt);
-        //orientation = Math::ToQuaternion(glm::normalize(Math::ToQuat(orientation)));
+        glm::quat o = Math::ToQuat(orientation) + glm::quat(0, objects[i]->angularVelocity) * dt;
+        orientation = Math::ToQuaternion(glm::normalize(o));
         
         //Pass them back in
         objectTransform.setPosition(position);
@@ -296,6 +289,8 @@ void Physics::UpdateRigidbodies(float dt)
     for(int i = 0; i < objects.size(); i++)
     {
         objects[i]->Update();
+        if(i == 0)
+            std::cout << glm::to_string(objects[i]->linearVelocity) << std::endl;
     }
 }
 
