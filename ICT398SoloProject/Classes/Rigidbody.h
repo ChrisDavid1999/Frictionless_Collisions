@@ -48,9 +48,10 @@ namespace solo
         enum type { box, sphere };
         
 
-        Collider(type t, reactphysics3d::CollisionShape* shape)
+        Collider(type t, reactphysics3d::CollisionShape* shape, rp3d::Transform trans)
         {
             collider = nullptr;
+            transform = trans;
         }
         
         rp3d::CollisionShape * collider;
@@ -61,6 +62,7 @@ namespace solo
         float density;
         float volume;
         InertiaTensor inertiaTensor;
+        rp3d::Transform transform;
     };
     
     struct Rigidbody

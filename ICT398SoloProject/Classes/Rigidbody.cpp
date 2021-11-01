@@ -7,7 +7,7 @@ namespace solo
     void Rigidbody::AddCollisionShape(Collider::type shape, reactphysics3d::CollisionShape* col)
     {
         rb->addCollider(col, reactphysics3d::Transform().identity());
-        colliders.push_back(Collider(shape, col));
+        colliders.push_back(Collider(shape, col, rb->getTransform()));
     }
 
     void Collider::Box(reactphysics3d::CollisionShape* shape)
@@ -46,19 +46,19 @@ namespace solo
 
     void Rigidbody::Update()
     {
-        /*const auto oldWorldCOM = mass.worldCenter;
-        //TODO const auto localCOM = CalculateCentreOfMass();
+        const auto oldWorldCOM = mass.worldCenter;
+        //const auto localCOM = CalculateCentreOfMass();
         const glm::vec3 worldCOM = (Math::ToQuat(rb->getTransform().getOrientation()) * localCOM) + Math::ToVec3(rb->getTransform().getPosition());
         mass.worldCenter = worldCOM;
 
-        auto localCOM = m_BodyMass.LocalCentreOfMass;
+        //auto localCOM = mass.localCenter;
         glm::mat3 tempLocalInertiaTensor = glm::mat3(1.0f);
 
         // calc inertia tensor using colliders
         for(Collider col : colliders)
         {
             glm::vec3 shapeInertiaTensor = col.inertiaTensor.LocalInertiaTensor;
-            auto rot = glm::mat3_cast(Math::ToQuat(col.collider->));
+            auto rot = glm::mat3_cast(Math::ToQuat(col.transform.getOrientation()));
             auto rotTranspose = glm::transpose(rot);
             rotTranspose[0] *= shapeInertiaTensor.x;
             rotTranspose[1] *= shapeInertiaTensor.y;
@@ -66,8 +66,8 @@ namespace solo
             glm::mat3 inertiaTensor = rot * rotTranspose;
 
             // shift to the rigidbody COM with parallel axis theorem
-            glm::vec3 offset = col->GetColliderPosition() - localCOM;
-            auto offsetSqr = glm::length2(offset);
+            glm::vec3 offset = Math::ToVec3(col.transform.getPosition()) - localCOM;
+            float offsetSqr = glm::length2(offset);
             glm::mat3 offsetMatrix = glm::mat3(0.0f);
             offsetMatrix[0][0] = offsetSqr;
             offsetMatrix[1][1] = offsetSqr;
@@ -76,7 +76,7 @@ namespace solo
             offsetMatrix[0] += offset * (-offset.x);
             offsetMatrix[1] += offset * (-offset.y);
             offsetMatrix[2] += offset * (-offset.z);
-            offsetMatrix *= col->GetColliderMass().Mass;
+            offsetMatrix *= col.mass.value;
 
             tempLocalInertiaTensor += inertiaTensor + offsetMatrix;
         }
@@ -84,7 +84,7 @@ namespace solo
         float x = tempLocalInertiaTensor[0][0];
         float y = tempLocalInertiaTensor[1][1];
         float z = tempLocalInertiaTensor[2][2];
-        inertiaTensor.SetLocalInertiaTensor({x,y,z});*/
+        inertiaTensor.SetLocalInertiaTensor({x,y,z});
     }
 
 

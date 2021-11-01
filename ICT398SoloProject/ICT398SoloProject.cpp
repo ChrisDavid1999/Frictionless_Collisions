@@ -3,8 +3,6 @@
 #include "imgui/imgui_impl_glut.h"
 #include <stdlib.h>
 #include <math.h>
-#include <GL/glut.h>
-#include <glm/glm.hpp>
 #include "Classes/WorldManager.h"
 
 float angle = 0.0f;
