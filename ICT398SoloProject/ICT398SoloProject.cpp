@@ -51,7 +51,7 @@ void renderScene(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
-
+	
 	gluLookAt(x, 1.0f, z,
 		x + lx, 1.0f, z + lz,
 		0.0f, 1.0f, 0.0f);
@@ -107,6 +107,7 @@ int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	Manager::getInstance().Init();
+	//File is not actually used yet haha
 	PhysicsManager::getInstance().LoadFile("files/one.txt");
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);

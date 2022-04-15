@@ -36,7 +36,7 @@ void Physics::LoadFile(std::string file)
         object->rb = world->createRigidBody(test);
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->AddCollisionShape(solo::Collider::type::box, box, 10);
+        object->AddCollisionShape(solo::Collider::type::box, box, 1);
         objects.push_back(object);
     }
 
@@ -48,20 +48,20 @@ void Physics::LoadFile(std::string file)
         object->scale = {0.1, 2, 2};
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box2 = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->AddCollisionShape(solo::Collider::type::box, box2, 50);
+        object->AddCollisionShape(solo::Collider::type::box, box2, 10);
         objects.push_back(object);
     }
 
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());
         reactphysics3d::Transform test3;
-        test3.setPosition(rp3d::Vector3(5, 0.7, -3.2));
+        test3.setPosition(rp3d::Vector3(5, 0, -3.2));
         object->rb = world->createRigidBody(test3);
         object->scale = {0.25, 0.25, 0.25};
         object->rb->setUserData(object);
         reactphysics3d::CollisionShape* box3 = common.createBoxShape(rp3d::Vector3(object->scale.x/2, object->scale.y/2, object->scale.z/2));
-        object->AddCollisionShape(solo::Collider::type::box, box3, 1);
-        object->linearVelocity = {-10, 0, 0};
+        object->AddCollisionShape(solo::Collider::type::box, box3, 10);
+        object->linearVelocity = {-5, 0, 0};
         objects.push_back(object);
     }
 }
@@ -146,7 +146,7 @@ void Physics::DrawRigidbodies()
         }
         glScalef(objects[i]->scale.x, objects[i]->scale.y, objects[i]->scale.z);
         
-            glutSolidCube(1);
+        glutSolidCube(1);
         /*else
         {
             glutSolidSphere(1, 10, 10);
@@ -184,8 +184,8 @@ void Physics::Collisions(float dt)
         objects[two]->rb->setTransform(transformTwo);
         */
 
-        glm::vec3 rigidbodyOne = contactPositionOne - objects[one]->mass.worldCenter;
-        glm::vec3 rigidbodyTwo = contactPositionTwo - objects[two]->mass.worldCenter;
+        glm::vec3 rigidbodyOne = contactPositionOne - Math::ToVec3(objects[one]->rb->getTransform().getPosition());
+        glm::vec3 rigidbodyTwo = contactPositionTwo - Math::ToVec3(objects[two]->rb->getTransform().getPosition());
         
         //Math time
         float restitution = -(1 + 0.4);//Need to check this out
@@ -203,36 +203,31 @@ void Physics::Collisions(float dt)
 
         //Denominator
         float totalMass = objects[one]->mass.inverse + objects[two]->mass.inverse;
-        glm::vec3 inertia = (rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne) +
+        /*glm::vec3 inertia = (rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne) +
             (rigidbodyTwo * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyTwo);
-        glm::vec3 denominator = totalMass + inertia;
-
-        //Lambda + impulse
-        glm::vec3 lambda = numerator/denominator;
-        glm::vec3 impulse = lambda * contactNormal;
-        float inertiaS = glm::dot((rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne),
+        glm::vec3 denominatorVec = totalMass + inertia;*/
+        
+        float inertiaFinal = glm::dot((rigidbodyOne * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyOne),
             (rigidbodyTwo * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyTwo));
-        float denominatorS = totalMass + inertiaS;
+        float denominator = totalMass + inertiaFinal;
 
         //Lambda + impulse
-        float lambdaS = numerator/denominatorS;
-        //glm::vec3 impulse = lambda * contactNormal;
+        float lambda = numerator/denominator;
+        glm::vec3 impulse = lambda * contactNormal;
         //Set values one
+        if(lambda < 0)
+        {
             linearVelocityOne += impulse * objects[one]->mass.inverse;
             angularVelocityOne += (lambda * objects[one]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalOne);
-            objects[one]->linearVelocity = linearVelocityOne;
-            objects[one]->angularVelocity = angularVelocityOne;
             //Set values two
             linearVelocityTwo -= impulse * objects[two]->mass.inverse;
             angularVelocityTwo -= (lambda * objects[two]->inertiaTensor.WorldInverseInertiaTensor * rigidbodyCrossNormalTwo);
+        }
+        objects[one]->linearVelocity = linearVelocityOne;
+        objects[one]->angularVelocity = angularVelocityOne;
             objects[two]->linearVelocity = linearVelocityTwo;
             objects[two]->angularVelocity = angularVelocityTwo;   
-
-        if(two == 0)
-        {
-            collisions.pop();
-        }
-        else
+        
             collisions.pop();
     }
 }
@@ -274,8 +269,9 @@ void Physics::ProcessRigidbodies(float dt)
         
         //Update them
         position += Math::ToVector3(objects[i]->linearVelocity * dt);
-        glm::quat o = Math::ToQuat(orientation) + glm::quat(0, objects[i]->angularVelocity) * dt;
-        orientation = Math::ToQuaternion(glm::normalize(o));
+        glm::quat o = Math::ToQuat(orientation) * glm::quat(objects[i]->angularVelocity * dt);
+        orientation = Math::ToQuaternion(o);
+        //orientation = Math::ToQuaternion(glm::normalize(o));
         
         //Pass them back in
         objectTransform.setPosition(position);
@@ -289,22 +285,6 @@ void Physics::UpdateRigidbodies(float dt)
     for(int i = 0; i < objects.size(); i++)
     {
         objects[i]->Update();
-        if(i == 0)
-            std::cout << glm::to_string(objects[i]->linearVelocity) << std::endl;
-    }
-}
-
-static void renderBitmapString(
-        float x,
-        float y,
-        float z,
-        void *font,
-        char *string) {
-
-    char *c;
-    glRasterPos3f(x, y,z);
-    for (c=string; *c != '\0'; c++) {
-        glutBitmapCharacter(font, *c);
     }
 }
 
