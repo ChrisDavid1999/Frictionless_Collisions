@@ -26,7 +26,7 @@ bool Physics::Init()
     return world; 
 }
 
-void Physics::LoadFile(std::string file)
+void Physics::LoadFile()
 {
     {
         solo::Rigidbody* object = new solo::Rigidbody(objects.size());

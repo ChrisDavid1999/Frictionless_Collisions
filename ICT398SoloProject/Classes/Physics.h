@@ -11,7 +11,7 @@ class Physics
 {
 public:
     bool Init();
-    void LoadFile(std::string file);
+    void LoadFile();
     void DrawDebugLines();
     void Update(float dt);
     void DrawRigidbodies();

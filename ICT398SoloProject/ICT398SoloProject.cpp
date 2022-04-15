@@ -108,7 +108,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	Manager::getInstance().Init();
 	//File is not actually used yet haha
-	PhysicsManager::getInstance().LoadFile("files/one.txt");
+	PhysicsManager::getInstance().LoadFile();
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(1280, 720);
